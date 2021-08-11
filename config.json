@@ -1,0 +1,15 @@
+{
+  "api_id": null,
+  "api_hash": "",
+  "bot_token": "",
+  "boards": {
+    "b": "/b/",
+    "d": "/d/"
+  },
+  "salt": "",
+  "saving_interval": null,
+  "main_text": "",
+  "rules_text": "",
+  "about_url": "",
+  "db_chat_id": null
+}
