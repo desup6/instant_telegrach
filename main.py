@@ -3,6 +3,7 @@ import time
 import json
 import asyncio
 
+from re import findall
 from telethon import TelegramClient, events, Button
 from telethon.errors.rpcerrorlist import MessageNotModifiedError, MessageDeleteForbiddenError
 from telethon.tl.types import DocumentAttributeFilename, MessageMediaPhoto, MessageMediaDocument, Photo, PhotoSize, \
@@ -84,7 +85,9 @@ async def go_to_board(peer, id, board, page):
 
 
 async def send_new_posts(thread, last_index, peer, id, hash):
-    ids = [t for t in threads[thread[-1]]['threads'] if t['num'] == thread[:-1]][0]['ids'][last_index:]
+    board = findall(r'\D+', thread)[0]
+    thread_num = findall(r'\d+', thread)[0]
+    ids = [t for t in threads[board]['threads'] if t['num'] == thread_num][0]['ids'][last_index:]
     new_last_index = last_index
     async for post in get_posts(ids):
         post_dict = eval(post.text)
@@ -179,8 +182,8 @@ async def callback(event):
 
     elif event.data.decode() == 'new_post':
         thread = userstates[hash][0]
-        thread_num = thread[:-1]
-        board = thread[-1]
+        thread_num = findall(r'\d+', thread)[0]
+        board = findall(r'\D+', thread)[0]
         threads[board]['posts'] += 1
         num = str(threads[board]['posts'])
 
@@ -215,11 +218,11 @@ async def callback(event):
     await reply.delete()
 
 
-@bot.on(events.CallbackQuery(pattern=lambda s: s.decode()[:-1].isdigit(), func=lambda e: e.is_private))
+@bot.on(events.CallbackQuery(pattern=lambda s: findall(r'\d+', s.decode()) and findall(r'\D+', s.decode()) and findall(r'\D+', s.decode())[0] in boards, func=lambda e: e.is_private))
 async def callback(event):
     thread = event.data.decode()
-    thread_num = thread[:-1]
-    board = thread[-1]
+    thread_num = findall(r'\d+', thread)[0]
+    board = findall(r'\D+', thread)[0]
     hash = await get_user_hash(event)
     userstates[hash] = [thread, {}]
 
@@ -241,7 +244,7 @@ async def handler(event):
         else:
             await event.reply('Вы создаёте новый тред', buttons=[[Button.inline('Капча', 'captcha_thread')],
                                                                  [Button.inline('Отмена', 'cancel')]], file='images/posting.png')
-    elif userstate[:-1].isdigit():
+    elif userstate[0].isdigit():
         await event.reply('Вы создаёте новый пост', buttons=[[Button.inline('Капча', 'captcha_post')],
                                                              [Button.inline('Отмена', 'cancel')]], file='images/posting.png')
     else:
@@ -278,10 +281,10 @@ async def callback(event):
 @bot.on(events.CallbackQuery(pattern='del', func=lambda e: e.is_private))
 async def callback(event):
     hash = await get_user_hash(event)
-    userstate = userstates[hash][0]
+    thread = userstates[hash][0]
 
     st_id = int(event.data.decode()[3:])
-    board = userstate[-1]
+    board = findall(r'\D+', thread)[0]
 
     ids = [x for x in range(event.message_id, st_id, -1)]
     try:
