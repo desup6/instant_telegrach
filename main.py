@@ -240,7 +240,7 @@ async def handler(event):
             await event.reply('Нельзя создать тред без текста/медиа', buttons=[[Button.inline('Отмена', 'cancel')]], file='images/refuse.png')
         else:
             await event.reply('Вы создаёте новый тред', buttons=[[Button.inline('Капча', 'captcha_thread')],
-                                                             [Button.inline('Отмена', 'cancel')]], file='images/posting.png')
+                                                                 [Button.inline('Отмена', 'cancel')]], file='images/posting.png')
     elif userstate[:-1].isdigit():
         await event.reply('Вы создаёте новый пост', buttons=[[Button.inline('Капча', 'captcha_post')],
                                                              [Button.inline('Отмена', 'cancel')]], file='images/posting.png')
